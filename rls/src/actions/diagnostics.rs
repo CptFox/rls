@@ -20,7 +20,7 @@ use url::Url;
 
 pub use lsp_types::Diagnostic;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Suggestion {
     pub range: Range,
     pub new_text: String,

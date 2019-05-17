@@ -17,6 +17,7 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json;
 use url::Url;
 
+use crate::actions::diagnostics::Suggestion;
 use crate::actions::hover;
 use crate::actions::run::collect_run_actions;
 use crate::actions::InitActionContext;
@@ -33,6 +34,8 @@ pub use crate::lsp_data::request::{
 use crate::lsp_data::*;
 use crate::server;
 use crate::server::{Ack, Output, Request, RequestAction, ResponseError, ResponseWithMessage};
+
+use crate::actions::problems_matcher;
 
 /// The result of a deglob action for a single wildcard import.
 ///
@@ -494,7 +497,11 @@ fn make_suggestion_fix_actions(
         let suggestions = results
             .iter()
             .filter(|(diag, _)| diag.range.overlaps(&params.range))
-            .flat_map(|(_, suggestions)| suggestions);
+            .flat_map(|(diag, suggestions): &(Diagnostic, Vec<Suggestion>)| {
+                let mut suggestions = (*suggestions).clone();
+                suggestions.extend(problems_matcher::parse_diagnostic_for_suggestions(file_path, ctx, diag));
+                suggestions
+            });
         for s in suggestions {
             let span = Location { uri: params.text_document.uri.clone(), range: s.range };
             let span = serde_json::to_value(&span).unwrap();

@@ -52,6 +52,7 @@ pub mod format;
 pub mod hover;
 pub mod notifications;
 pub mod post_build;
+pub mod problems_matcher;
 pub mod progress;
 pub mod requests;
 pub mod run;
